@@ -1,0 +1,72 @@
+/*
+  Das lokale Menü folgt der Schreibrichtung des Dokuments.
+  Zwei Mechanismen greifen dabei zusammen:
+
+  1. Flexbox ordnet die Elemente entlang der Inline-Achse an, deren
+     Richtung sich nach dem dir-Attribut des <html>-Elements richtet.
+     Dadurch wechselt das Menü bei dir="rtl" von der rechten auf die
+     linke Seite, ohne dass die Reihenfolge im HTML geändert wird.
+
+  2. Die logischen Eigenschaften (inline-start/end, block-start/end)
+     statt fixem left/right bzw. top/bottom sorgen dafür, dass auch
+     Innenabstände und Trennlinie mitwandern und weiterhin zum
+     Hauptbereich hin zeigen.
+
+  3. Bootstrap arbeitet im Standard-Build nicht durchgängig mit
+     logischen Eigenschaften. Betroffen sind hier list-unstyled
+     (padding-left), die caption-Regel der Tabelle (text-align: left)
+     und ms-auto (margin-left). Diese Stellen werden im Folgenden
+     einzeln nachgebessert.
+*/
+
+.inhalts-layout {
+  display: flex; /* ordnet in Leserichtung an: bei rtl wandert das Menü nach links */
+  align-items: start;
+  gap: 2rem;
+}
+
+.inhalts-hauptbereich {
+  flex: 1 1 0;
+  min-width: 0; /* erlaubt Schrumpfen, sonst sprengen breite Inhalte das Layout */
+}
+
+.lokales-menue {
+  flex: 0 0 220px;
+  position: sticky;
+  inset-block-start: 1rem; /* wie top, nur in logischer Schreibweise */
+  padding-inline-start: 1rem; /* Abstand dort, wo die Schrift beginnt: ltr links, rtl rechts */
+  border-inline-start: 1px solid var(--bs-border-color); /* Trennlinie liegt immer zum Hauptbereich hin */
+}
+
+.lokales-menue ul {
+  padding-inline-start: 0; /* list-unstyled nutzt padding-left und greift bei rtl nicht */
+}
+
+.navbar-brand {
+  margin-right: 0; /* Bootstrap setzt hier 1rem, was bei rtl außen landet */
+}
+
+.navbar-nav {
+  padding-inline-start: 0; /* Bootstrap setzt padding-left: 0 und greift daher bei rtl nicht */
+  margin-inline-start: auto; /* Ersatz für ms-auto, das margin-left nutzt und bei rtl nicht greift */
+}
+
+.table caption {
+  text-align: start; /* Bootstrap setzt text-align: left und greift daher bei rtl nicht */
+}
+
+@media (max-width: 991.98px) {
+  .inhalts-layout {
+    flex-direction: column; /* untereinander gestapelt, dabei spielt die Leserichtung keine Rolle */
+  }
+
+  .lokales-menue {
+    flex: initial; /* ohne dies würden die 220px hier zur Höhe statt zur Breite */
+    order: -1;
+    position: static;
+    width: 100%;
+    padding-inline-start: 0;
+    border-inline-start: none;
+    border-block-end: 1px solid var(--bs-border-color); /* Trennlinie sitzt jetzt unten */
+  }
+}
